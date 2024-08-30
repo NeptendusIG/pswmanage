@@ -1,0 +1,19 @@
+# Fichiers de configuration personnels
+sandbox.py
+main_settings.json
+
+# Exclure les fichiers temporaires ou binaires
+*.log
+*.pyc
+*.pyo
+*.pickle
+
+# Exclure les dossiers spécifiques
+__pycache__/
+env/
+build/
+dist/
+
+# Exclure les fichiers des éditeurs
+.vscode/
+.idea/
