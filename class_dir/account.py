@@ -3,7 +3,7 @@
 #
 ########################
 from hashlib import sha256
-from utilitaire.utility import GUI, File
+from pswmanage.utilitaire.utility import GUI
 import logging, pyperclip, datetime
 import tkinter as tk
 import ttkbootstrap as ttk  # remplace: from tkinter import ttk

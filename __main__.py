@@ -6,21 +6,15 @@
 """
 
 # -- IMPORTS --
-import os, sys
-if __name__ == '__main__':
-    # Ajouter accès aux modules du projet
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Modules
 import tkinter as tk
 import ttkbootstrap as ttk
-import pickle, sys, logging, hashlib
 # Local
-from utilitaire.utility import GUI, File, Settings
-from function_dir.functions import ask_mdp_on_open, decrypt, load_encrypt_file, check_password, save_accounts_lib, encrypt, \
-    update_search_list
-from function_dir.manage_settings import add_widget_to_access_settings
+from pswmanage.utilitaire.utility import GUI, File, Settings
+from pswmanage.function_dir.functions import ask_mdp_on_open, decrypt, load_encrypt_file, check_password, save_accounts_lib, update_search_list
+from pswmanage.function_dir.manage_settings import add_widget_to_access_settings
 # Classes
-from class_dir.account import AccountLib
+from pswmanage.class_dir.account import AccountLib
 
 # Paramètres
 logger = Settings.setup_logging("debugging")

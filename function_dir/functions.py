@@ -5,10 +5,10 @@
 """
 # -- IMPORTS --
 # Modules
-from utilitaire.utility import File, Settings, GUI
-from class_dir.account import AccountLib
+from pswmanage.utilitaire.utility import File, Settings, GUI
+from pswmanage.class_dir.account import AccountLib
 from typing import Any, Optional
-import pickle, hashlib, os, logging, sys, shutil, datetime
+import pickle, hashlib, os, sys, datetime
 import tkinter as tk
 import ttkbootstrap as ttk  # remplace: from tkinter import ttk
 

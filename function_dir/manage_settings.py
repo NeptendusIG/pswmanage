@@ -21,9 +21,9 @@ import numpy as np
 # Importations spécifiques
 from typing import Any, Optional
 # Modules locaux (et classes)
-from utilitaire.utility import File, Settings, GUI  # Classes de fonctions
-from class_dir.account import AccountLib
-from function_dir.functions import save_accounts_lib, extend_the_key, check_password
+from pswmanage.utilitaire.utility import File, Settings, GUI  # Classes de fonctions
+from pswmanage.class_dir.account import AccountLib
+from pswmanage.function_dir.functions import save_accounts_lib, extend_the_key, check_password
 
 # Paramètres
 logger = Settings.setup_logging("debugging")
