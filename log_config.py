@@ -1,9 +1,32 @@
+'''# Logging settings for a workspace/project
+
+## VERSION : 1.1
+
+## DESCRIPTION
+
+- *Logger debugging :*
+Consol-Messages 
+    DEBUG with full informations (module, function, line, message),
+    In formated in pourcent-style, with string padding ;
+    Colorized in gray for fitting its level.
+    INFO (and obove), full info (module, function, line, message),
+    In formated in pourcent-style, with string padding,
+    Colorized in red (head only = module + level);
+
+- *Logger main :*
+Consol-Messages 
+    only trough an "OP-" prefix (Operation) ;
+Files-Messages 
+    for ERROR (and above), 
+    for "OP-" prefix (Operation),
+    for "UTIL" (Utilisateur/connexion) ;
+'''
 import logging
 import os.path
 from logging import Filter
-#from logging import config
 
-self_path_from_utility = "log_config"
+
+self_path_from_utility = "pswmanage.log_config"
 logsdirectory_path_from_utility = "data/logs"
 
 config_dct = {
@@ -22,10 +45,10 @@ config_dct = {
             'format': '%(message)s',
         },
         'debbuging_info': {
-            'format': '%(module)s - %(levelname)s: %(message)s (Line: %(lineno)d [%(funcName)s])',
+            'format': '\033[31m%(module)-14s - %(levelname)-7s\033[0m - %(funcName)-15s - (Line%(lineno)4d) : %(message)s',
         },
         'debbuging_debug_only': {
-            'format': '\t%(module)s - %(levelname)s: %(message)s (Line: %(lineno)d [%(funcName)s])',
+            'format': '\033[38;5;8m%(module)-14s - %(levelname)-7s - \t%(funcName)-15s - (Line%(lineno)4d) : %(message)s\033[0m',
         }
     },
 
@@ -117,8 +140,9 @@ class OnlyDebugFilter(Filter):
 
 
 if __name__ == '__main__':
+    from logging import config
     logging.config.dictConfig(config_dct)
-    logger = logging.getLogger('main')
+    logger = logging.getLogger('debugging')
     logger.debug("Debugging message")
     logger.info("Information message")
     logger.warning("Warning message")
