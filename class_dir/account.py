@@ -3,7 +3,8 @@
 #
 ########################
 from hashlib import sha256
-from pswmanage.utilitaire.utility import GUI
+from utility import GUI
+# from pswmanage.class_dir.account import AccountLib as NewAccountLib
 import logging, pyperclip, datetime
 import tkinter as tk
 import ttkbootstrap as ttk  # remplace: from tkinter import ttk
@@ -67,8 +68,13 @@ class AccountLib:
         self.account_by_mail[account.email].remove(account)
 
     def refresh_struct(self):
-        """Remake dictionaries for every account"""
-        pass
+        """Remake an account library from self in the correct class"""
+        logger.debug('AccountLib refresh in new class: START')
+        new_lib = NewAccountLib(self.owner)
+        for i, account in enumerate(self.account_totset):
+            new_lib.add_account(account.refresh())
+        logger.debug(f'Account library refresh : SUCCESFULLY duplicated ({i+1} accounts)')
+        return new_lib
 
     def update_account_keywords(self, account: 'AccountLib.Account'):
         for word in account._key_words:
@@ -103,6 +109,11 @@ class AccountLib:
 
         def __str__(self):
             return f'{self.url} -> {self.username}, {self.email})'
+        
+        def refresh(self):
+            logger.debug('Account refreshed')
+            return NewAccountLib.Account(self.username, self.password, self.url, 
+                                         self.email, self.type, self.description, self.phone)
 
         def data(self):
             return f'{self.email} - {self.type} - {self.phone}  \n{self.description}'  # - {self._id}

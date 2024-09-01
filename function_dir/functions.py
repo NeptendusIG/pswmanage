@@ -5,7 +5,8 @@
 """
 # -- IMPORTS --
 # Modules
-from pswmanage.utilitaire.utility import File, Settings, GUI
+# from pswmanage.utilitaire.utility import File, Settings, GUI
+from utility import File, Settings, GUI
 from pswmanage.class_dir.account import AccountLib
 from typing import Any, Optional
 import pickle, hashlib, os, sys, datetime
@@ -69,7 +70,7 @@ def xor_encrypt_bytes(data: bytes, key: bytes) -> bytes:
 
 def extend_the_key(initial_hash: bytes, extend: Optional[int] = None) -> bytes:
     if extend is None:
-        extend = File.JsonFile.get_value_jsondict('PasswordManager/main_settings.json', 'key_extensions')
+        extend = File.JsonFile.get_value_jsondict('psw_settings.json', 'key_extensions')
     upper_hash = hashlib.sha256(initial_hash).digest()
     extended_key = initial_hash + (extend_the_key(upper_hash, extend - 1) if extend > 0 else b'')
     logger.info(f"{extended_key = }, {extend=}")
@@ -77,7 +78,7 @@ def extend_the_key(initial_hash: bytes, extend: Optional[int] = None) -> bytes:
 
 
 def check_password(accounts_lib: AccountLib, psw_input: str) -> bool:
-    key_ext = File.JsonFile.get_value_jsondict('PasswordManager/main_settings.json', 'key_extensions')
+    key_ext = File.JsonFile.get_value_jsondict('psw_settings.json', 'key_extensions')
     hashed_psw = extend_the_key(hashlib.sha256(psw_input.encode()).digest(), key_ext)
     logger.info(f"Vérification: {hashed_psw} ({key_ext} ext) vs {accounts_lib.password_hash}")
     return hashed_psw == accounts_lib.password_hash
@@ -91,7 +92,7 @@ def ask_mdp_on_open(window) -> str:
     """Demande mot de passe maitre.
     Si ANNULER : Stop le programme
     Si FileNotFound: Bouton Nouveau : Créer un fichier"""
-    source_path = File.JsonFile.get_value_jsondict('PasswordManager/main_settings.json', 'source_location', handle_keyERROR=True, default_val=False)
+    source_path = File.JsonFile.get_value_jsondict('psw_settings.json', 'source_location', default=False)
     # Variable pour stocker le mot de passe
     password = tk.StringVar()
 
@@ -157,7 +158,7 @@ def creation_new_library() -> None:
     if source_path is None:
         logger.info("New library: CANCELED")
         return
-    source_path = os.path.join(source_path, "passwors_library.pickle")
+    source_path = os.path.join(source_path, "psw_library.pickle")
     new_lib = AccountLib(owner="Gaetan L")
     logger.info("New library: AccountLib CREATED")
     # 2 Créer fichier crypter
@@ -167,10 +168,10 @@ def creation_new_library() -> None:
         file.write(encrypted)
         logger.info("New library: File CREATED")
     # 3 Mettre paramètres à jour
-    historic: list = File.JsonFile.get_value_jsondict("PasswordManager/main_settings.json", "historic_locations")
+    historic: list = File.JsonFile.get_value_jsondict("psw_settings.json", "historic_locations")
     historic.append(source_path)
-    File.JsonFile.set_value_jsondict("PasswordManager/main_settings.json", "historic_locations", historic)
-    File.JsonFile.set_value_jsondict("PasswordManager/PasswordManager/main_settings.json", "source_location", source_path)
+    File.JsonFile.set_value_jsondict("psw_settings.json", "historic_locations", historic)
+    File.JsonFile.set_value_jsondict("psw_settings.json", "source_location", source_path)
     logger.info("New library: settings UPDATED (source and historic)")
 
     logger.info("New library: ACTIVATED (complete)")
@@ -178,20 +179,27 @@ def creation_new_library() -> None:
 
 
 def load_encrypt_file() -> Optional[bytes]:
-    filepath = File.JsonFile.get_value_jsondict('PasswordManager/main_settings.json', 'source_location')
+    filepath = File.JsonFile.get_value_jsondict('psw_settings.json', 'source_location')
     logger.info(f"Récup Data: File ({filepath})")
     if os.path.exists(filepath):
         return open(filepath, 'rb').read()
     logger.error(f"Récup Data: FILE NOT FOUND")
 
 
-def save_accounts_lib(accounts_lib: AccountLib, psw: str, update_backups=False) -> None:
+def save_accounts_lib(accounts_lib: AccountLib, psw: str, update_backups=False, refresh_AccountLibObject=False) -> None:
+    logger.info("Sauvegarde: START")
+    if refresh_AccountLibObject:
+        accounts_lib = accounts_lib.refresh_struct()
+        logger.debug("Sauvegarde: AccountLib REFRESHED")
     encrypted_bytes = encrypt(accounts_lib, psw)
-    source_path = File.JsonFile.get_value_jsondict('PasswordManager/main_settings.json', 'source_location')
+    source_path = "data/input/new_psw_library.pickle" #File.JsonFile.get_value_jsondict('psw_settings.json', 'source_location')
     with open(source_path, 'wb') as file:
         file.write(encrypted_bytes)
+        logger.debug(f"Sauvegarde: File SAVED/Write ({source_path})")
     if update_backups:
         save_backups(encrypted_bytes)
+        logger.debug("Sauvegarde: BACKUPS updated")
+    logger.info("Sauvegarde: COMPLETE")
     return
 
 
@@ -200,7 +208,7 @@ def save_backups(encrypted_bytes: bytes):
     - Seulement si la dernière sauvegarde a plus de 7 jours
     - Crée un fichier .pickle avec la date actuelle (Y_M_D) dans un dossier 'backups'
     """
-    backup_paths_dir = File.JsonFile.get_value_jsondict('PasswordManager/main_settings.json', 'backup_locations')
+    backup_paths_dir = File.JsonFile.get_value_jsondict('psw_settings.json', 'backup_locations')
     logger.info(f"Backup: START ({len(encrypted_bytes)} bytes for {len(backup_paths_dir)} locations)")
     for backups_dir in backup_paths_dir:
         logger.info(f"Backup: {backups_dir}")
@@ -229,9 +237,9 @@ def add_a_backup():
     new_dir_for_backups = os.path.join(dir_path, "backups")
     if not os.path.exists(new_dir_for_backups):
         os.mkdir(new_dir_for_backups)
-    backup_paths = File.JsonFile.get_value_jsondict('PasswordManager/main_settings.json', 'backup_locations')
+    backup_paths = File.JsonFile.get_value_jsondict('psw_settings.json', 'backup_locations')
     backup_paths.append(new_dir_for_backups)
-    File.JsonFile.set_value_jsondict('PasswordManager/main_settings.json', 'backup_locations', backup_paths)
+    File.JsonFile.set_value_jsondict('psw_settings.json', 'backup_locations', backup_paths)
     logger.info("Backup: ADDED")
     return
 

@@ -1,10 +1,5 @@
-import logging.config
-import utilitaire.log_config as log
+import json
+from utility import File
+r = File.JsonFile.get_value_jsondict('main_settings.json', 'source_path')
 
-logging.config.dictConfig(log.config_dct)
-logger = logging.getLogger('debugging_v2')
-
-
-
-logger.info('TEST: START')
-logger.debug('TEST: debug')
+print(r)

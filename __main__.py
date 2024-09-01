@@ -23,9 +23,11 @@ logger.info("Lancement du programme.")
 # Classes
 # -- VARIABLES INITIALES / GLOBALES --
 default_settings = {
-    "source_location": "data/mdp.bytes",
+    "source_location": "data/input/psw_library.pickle",
     "historic_locations": [],
-    "key_extensions": 0
+    "backup_locations": [],
+    "key_extensions": 0,
+    "last_key_update": "2024-3-06"
 }
 
 
@@ -92,11 +94,11 @@ def afficher_fenetre_boutons():
 
 
 def verrouiller_mdp(accounts):
-    logger.info("\nOP-Verrouillage : START")
+    logger.info("OP-Verrouillage : START")
     password = GUI.ask_entry(can_cancel=False)
     if check_password(accounts, password):
         logger.info("OP-Verrouillage : password OK")
-        save_accounts_lib(accounts, password, update_backups=True)
+        save_accounts_lib(accounts, password, update_backups=True, refresh_AccountLibObject=False)
         logger.info("OP-Verrouillage : data SAVED")
         del accounts, password
         return True
@@ -108,7 +110,7 @@ def verrouiller_mdp(accounts):
 if __name__ == '__main__':
     # - Variables -
     # - Environnement -
-    File.create_file('main_settings.json', default_content=default_settings)
+    File.create_file('psw_settings.json', default_content=default_settings)
     # - Programme -
     while True:
         accounts = charger_mdp()
