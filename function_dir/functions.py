@@ -192,7 +192,7 @@ def save_accounts_lib(accounts_lib: AccountLib, psw: str, update_backups=False, 
         accounts_lib = accounts_lib.refresh_struct()
         logger.debug("Sauvegarde: AccountLib REFRESHED")
     encrypted_bytes = encrypt(accounts_lib, psw)
-    source_path = "data/input/new_psw_library.pickle" #File.JsonFile.get_value_jsondict('psw_settings.json', 'source_location')
+    source_path = File.JsonFile.get_value_jsondict('psw_settings.json', 'source_location')
     with open(source_path, 'wb') as file:
         file.write(encrypted_bytes)
         logger.debug(f"Sauvegarde: File SAVED/Write ({source_path})")

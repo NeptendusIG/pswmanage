@@ -5,7 +5,7 @@
 from hashlib import sha256
 from utility import GUI
 # from pswmanage.class_dir.account import AccountLib as NewAccountLib
-import logging, pyperclip, datetime
+import logging, pyperclip
 import tkinter as tk
 import ttkbootstrap as ttk  # remplace: from tkinter import ttk
 from typing import Union

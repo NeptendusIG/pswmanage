@@ -13,11 +13,10 @@ Classement 2
 
 
 # Modules bases
-import os, logging, sys, shutil, time, datetime, pickle, hashlib, subprocess
+import os, shutil, datetime, hashlib, subprocess
 # Modules renommés
 import tkinter as tk
 import ttkbootstrap as ttk
-import numpy as np
 # Importations spécifiques
 from typing import Any, Optional
 # Modules locaux (et classes)

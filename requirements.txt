@@ -1,0 +1,6 @@
+pillow==10.4.0
+pswmanage @ file:///Users/gaetan/python_workspace/_ongoing/pswmanage-project
+pyperclip==1.9.0
+tk==0.1.0
+ttkbootstrap==1.10.1
+utility @ file:///Users/gaetan/python_workspace/_ongoing/utility-project
