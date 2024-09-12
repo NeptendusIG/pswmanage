@@ -30,6 +30,7 @@ python -m pswmanage
 ## Versions
 
 1.0.0 - 30/08/24 - Mise en fonctionnement
+
 2.0.0 - 01/09/24 - Fonctionnement en package local
 
 ## Améliorations futurs
@@ -37,9 +38,13 @@ python -m pswmanage
 **Road map :**
 
 2.1.0 - // - feat: création/choisir fichier de sauvegarde sur l'ouverture de l'app
+
 2.2.0 - // - fix: corrections et amélioration du log_config.py
+
 ...
+
 3.0.0 - // - feat: meilleur fenêtre de recherche (GUI et fonctionnalités)
+
 4.0.0 - // - feat: possibilité de générer une image (blured) imprimable des indentifiants
 
 **Suggestions :**

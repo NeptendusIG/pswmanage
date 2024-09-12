@@ -10,7 +10,7 @@
 import tkinter as tk
 import ttkbootstrap as ttk
 # Local
-from pswmanage.utilitaire.utility import GUI, File, Settings
+from utility import GUI, File, Settings
 from pswmanage.function_dir.functions import ask_mdp_on_open, decrypt, load_encrypt_file, check_password, save_accounts_lib, update_search_list
 from pswmanage.function_dir.manage_settings import add_widget_to_access_settings
 # Classes
