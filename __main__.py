@@ -44,11 +44,16 @@ def ajouter_mdp(library):
 
 def chercher_mdp(library):
     logger.info("OP-Research: START")
-    search_wind = GUI.set_basic_window("Recherche", themename='minty', size="600x200")
+    search_wind = GUI.set_basic_window("Recherche", themename='minty')
+    # - Barre de recherche -
     tk.Label(search_wind, text="Rechercher :").grid(row=0, column=0, padx=10, pady=5, sticky="w")
     champ = ttk.Entry(search_wind)
     champ.grid(row=0, column=1, padx=10, pady=5, sticky="w")
-    champ.bind("<Return>", lambda x: update_search_list(x, search_wind, library))
+    champ.bind("<Return>", lambda x: update_search_list(search_wind, library, x))
+    # - Initialiser la liste complète -
+    update_search_list(search_wind, library, None)
+    # - Démarrer la fenêtre -
+    logger.info("Research: initialized")
     search_wind.mainloop()
 
 

@@ -2,6 +2,9 @@
 #
 # ----------------------------
 """
+# 1 - Fonctions de chiffrement/déchiffrement
+# 2 - Fonctions d'interface utilisateur
+# 3 - Fonctions sur fichiers (Création, Lecture, Écriture)
 """
 # -- IMPORTS --
 # Modules
@@ -70,7 +73,7 @@ def xor_encrypt_bytes(data: bytes, key: bytes) -> bytes:
 
 def extend_the_key(initial_hash: bytes, extend: Optional[int] = None) -> bytes:
     if extend is None:
-        extend = File.JsonFile.get_value_jsondict('psw_settings.json', 'key_extensions')
+        extend = File.JsonFile.get_value('psw_settings.json', 'key_extensions')
     upper_hash = hashlib.sha256(initial_hash).digest()
     extended_key = initial_hash + (extend_the_key(upper_hash, extend - 1) if extend > 0 else b'')
     logger.info(f"{extended_key = }, {extend=}")
@@ -78,7 +81,7 @@ def extend_the_key(initial_hash: bytes, extend: Optional[int] = None) -> bytes:
 
 
 def check_password(accounts_lib: AccountLib, psw_input: str) -> bool:
-    key_ext = File.JsonFile.get_value_jsondict('psw_settings.json', 'key_extensions')
+    key_ext = File.JsonFile.get_value('psw_settings.json', 'key_extensions')
     hashed_psw = extend_the_key(hashlib.sha256(psw_input.encode()).digest(), key_ext)
     logger.info(f"Vérification: {hashed_psw} ({key_ext} ext) vs {accounts_lib.password_hash}")
     return hashed_psw == accounts_lib.password_hash
@@ -92,7 +95,7 @@ def ask_mdp_on_open(window) -> str:
     """Demande mot de passe maitre.
     Si ANNULER : Stop le programme
     Si FileNotFound: Bouton Nouveau : Créer un fichier"""
-    source_path = File.JsonFile.get_value_jsondict('psw_settings.json', 'source_location', default=False)
+    source_path = File.JsonFile.get_value('psw_settings.json', 'source_location', default=False)
     # Variable pour stocker le mot de passe
     password = tk.StringVar()
 
@@ -131,10 +134,13 @@ def ask_mdp_on_open(window) -> str:
     return password.get()
 
 
-def update_search_list(keywords_in_event, search_wind, library: AccountLib):
+def update_search_list(search_wind, library: AccountLib, keywords_in_event=None):
     logger.info("OP-Research: begin SORT")
     # 1 - Récupérer les accounts correspondants (potentiellement)
-    keywords = keywords_in_event.widget.get().split()
+    if not keywords_in_event is None:
+        keywords = keywords_in_event.widget.get().split()
+    else :
+        keywords = []
     accounts = set()
     for word in keywords:
         accounts.update(library.find_accounts_from_keywords(word))
@@ -142,7 +148,19 @@ def update_search_list(keywords_in_event, search_wind, library: AccountLib):
     if not accounts:
         accounts = library.account_totset
     # 2 - Afficher les comptes dans la fenêtre
-    GUI.parse_buttons_on_object(accounts, {"Voir détails": lambda x: x.individual_interface()}, window=search_wind, first_row=1)
+    display_accounts_set(search_wind, accounts)
+
+
+def display_accounts_set(window: tk.Tk, accounts: set[AccountLib.Account]):
+    """Affiche les comptes dans la fenêtre
+    - Transforme le set en liste triée
+    - Crée des boutons pour chaque compte
+    - Paramètrage et active la grille d'affichage (avec séparateur)
+    """
+    accounts: list[AccountLib.Account] = list(accounts)
+    accounts.sort(key=lambda x: x.type)
+    buttons = {"Voir détails": lambda x: x.individual_interface(), "Copier PSW": lambda x: GUI.copy_to_clipboard(x.password)}
+    GUI.parse_buttons_on_object(accounts, buttons, window=window, first_row=1, row_separator=True)
 
 
 # 3 - Fonctions sur fichiers (Création, Lecture, Écriture)
@@ -168,10 +186,10 @@ def creation_new_library() -> None:
         file.write(encrypted)
         logger.info("New library: File CREATED")
     # 3 Mettre paramètres à jour
-    historic: list = File.JsonFile.get_value_jsondict("psw_settings.json", "historic_locations")
+    historic: list = File.JsonFile.get_value("psw_settings.json", "historic_locations")
     historic.append(source_path)
-    File.JsonFile.set_value_jsondict("psw_settings.json", "historic_locations", historic)
-    File.JsonFile.set_value_jsondict("psw_settings.json", "source_location", source_path)
+    File.JsonFile.set_value("psw_settings.json", "historic_locations", historic)
+    File.JsonFile.set_value("psw_settings.json", "source_location", source_path)
     logger.info("New library: settings UPDATED (source and historic)")
 
     logger.info("New library: ACTIVATED (complete)")
@@ -179,7 +197,7 @@ def creation_new_library() -> None:
 
 
 def load_encrypt_file() -> Optional[bytes]:
-    filepath = File.JsonFile.get_value_jsondict('psw_settings.json', 'source_location')
+    filepath = File.JsonFile.get_value('psw_settings.json', 'source_location')
     logger.info(f"Récup Data: File ({filepath})")
     if os.path.exists(filepath):
         return open(filepath, 'rb').read()
@@ -192,7 +210,7 @@ def save_accounts_lib(accounts_lib: AccountLib, psw: str, update_backups=False, 
         accounts_lib = accounts_lib.refresh_struct()
         logger.debug("Sauvegarde: AccountLib REFRESHED")
     encrypted_bytes = encrypt(accounts_lib, psw)
-    source_path = File.JsonFile.get_value_jsondict('psw_settings.json', 'source_location')
+    source_path = File.JsonFile.get_value('psw_settings.json', 'source_location')
     with open(source_path, 'wb') as file:
         file.write(encrypted_bytes)
         logger.debug(f"Sauvegarde: File SAVED/Write ({source_path})")
@@ -208,7 +226,7 @@ def save_backups(encrypted_bytes: bytes):
     - Seulement si la dernière sauvegarde a plus de 7 jours
     - Crée un fichier .pickle avec la date actuelle (Y_M_D) dans un dossier 'backups'
     """
-    backup_paths_dir = File.JsonFile.get_value_jsondict('psw_settings.json', 'backup_locations')
+    backup_paths_dir = File.JsonFile.get_value('psw_settings.json', 'backup_locations')
     logger.info(f"Backup: START ({len(encrypted_bytes)} bytes for {len(backup_paths_dir)} locations)")
     for backups_dir in backup_paths_dir:
         logger.info(f"Backup: {backups_dir}")
@@ -237,20 +255,11 @@ def add_a_backup():
     new_dir_for_backups = os.path.join(dir_path, "backups")
     if not os.path.exists(new_dir_for_backups):
         os.mkdir(new_dir_for_backups)
-    backup_paths = File.JsonFile.get_value_jsondict('psw_settings.json', 'backup_locations')
+    backup_paths = File.JsonFile.get_value('psw_settings.json', 'backup_locations')
     backup_paths.append(new_dir_for_backups)
-    File.JsonFile.set_value_jsondict('psw_settings.json', 'backup_locations', backup_paths)
+    File.JsonFile.set_value('psw_settings.json', 'backup_locations', backup_paths)
     logger.info("Backup: ADDED")
     return
-
-
-# 4 - Fonctions d'accès aux paramètres
-
-
-
-
-
-
 
 
 

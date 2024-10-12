@@ -5,7 +5,7 @@
 from hashlib import sha256
 from utility import GUI
 # from pswmanage.class_dir.account import AccountLib as NewAccountLib
-import logging, pyperclip
+import logging, pyperclip, re
 import tkinter as tk
 import ttkbootstrap as ttk  # remplace: from tkinter import ttk
 from typing import Union
@@ -33,6 +33,7 @@ class AccountLib:
 
     def __str__(self):
         sites = '\n'.join([f'{url} : {self.account_by_url[url]}' for url in self.account_by_url])
+        logger.debug(f'AccountLib __str__ : {sites}')
         return f'Owner: {self.owner}. Accounts: {self.length}\n\n{sites}'
 
     # def new_account(self, **kwargs):
@@ -100,7 +101,7 @@ class AccountLib:
             self.password = password
             self.url = url
             self.email = email
-            self.type = type
+            self.type = type.lower() if type else None
             self.description = description
             self.phone = phone
             self._key_words = self.get_key_words()
@@ -108,7 +109,10 @@ class AccountLib:
             logger.info('Account initialized')
 
         def __str__(self):
-            return f'{self.url} -> {self.username}, {self.email})'
+            tag = f'{self.type}' if self.type else ''
+            match_name = re.match(r"(https?://)?([^/]+)", self.url)
+            enterprise = match_name.group(2)
+            return f'{tag:<20} - {enterprise:<30}\t- {self.email}/{self.username}'
         
         def refresh(self):
             logger.debug('Account refreshed')
