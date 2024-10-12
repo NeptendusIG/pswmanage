@@ -123,7 +123,7 @@ class AccountLib:
             tag = f'{self.type}' if self.type else ''
             match_name = re.match(r"(https?://)?([^/]+)", self.url)
             enterprise = match_name.group(2)
-            return f'{tag:<20} - {enterprise:<30}\t- {self.email}/{self.username}'
+            return f'{tag:<20} - {enterprise:<30}\t- {self.email} / {self.username}'
         
         def refresh(self):
             logger.debug('Account refreshed')

@@ -165,7 +165,7 @@ def display_accounts_set(window: tk.Tk, accounts: set[AccountLib.Account]):
     """
     accounts: list[AccountLib.Account] = list(accounts)
     accounts.sort(key=lambda x: x.type.lower())
-    buttons = {"Voir détails": lambda x: x.individual_interface(), "Copier PSW": lambda x: GUI.copy_to_clipboard(x.password)}
+    buttons = {"Voir détails": lambda x: x.individual_interface(), "Copier PSW": lambda x: x.copy_attr("password")}
     GUI.parse_buttons_on_object(accounts, buttons, window=window, first_row=1, row_separator=True)
 
 
