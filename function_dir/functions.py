@@ -136,6 +136,9 @@ def ask_mdp_on_open(window) -> str:
 
 def update_search_list(search_wind, library: AccountLib, keywords_in_event=None):
     logger.info("OP-Research: begin SORT")
+    # 0 - Effacer les anciens comptes
+    for widget in search_wind.winfo_children():
+        widget.destroy()
     # 1 - Récupérer les accounts correspondants (potentiellement)
     if not keywords_in_event is None:
         keywords = keywords_in_event.widget.get().split()
@@ -161,7 +164,7 @@ def display_accounts_set(window: tk.Tk, accounts: set[AccountLib.Account]):
     - Paramètrage et active la grille d'affichage (avec séparateur)
     """
     accounts: list[AccountLib.Account] = list(accounts)
-    accounts.sort(key=lambda x: x.type)
+    accounts.sort(key=lambda x: x.type.lower())
     buttons = {"Voir détails": lambda x: x.individual_interface(), "Copier PSW": lambda x: GUI.copy_to_clipboard(x.password)}
     GUI.parse_buttons_on_object(accounts, buttons, window=window, first_row=1, row_separator=True)
 

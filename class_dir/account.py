@@ -87,7 +87,7 @@ class AccountLib:
         if username:
             pass
         if url:
-            ensemble.update(self.account_by_url.get(word, set()))
+            ensemble.update(self.search_from_url(word))
         if email:
             ensemble.update(self.account_by_mail.get(word, set()))
         if type:
@@ -96,11 +96,12 @@ class AccountLib:
             # ensemble.update(self.account_by_keywords.get(word, set()))
             pass
         return ensemble
+    
+    def search_from_url(self, url) -> set:
+        logger.info(f'AccountLib: Find_accounts: Filter accounts from url: {url}')
+        found = filter(lambda account: url in account.url, self.account_totset)
+        return set(found)
         
-    def find_accounts_from_url(self, url):
-        ensemble = self.account_by_url.get(url, set())
-        return ensemble
-
 
     class Account:
 
