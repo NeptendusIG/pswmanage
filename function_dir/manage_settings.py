@@ -52,11 +52,11 @@ def add_widget_to_access_settings(window: tk.Tk, library=None) -> None:
         change_key_extensions(library, -1)
     # 2 - CHAQUE PARAMÈTRE : un nom <A> / un état (valeur) <B> / des actions possibles <C>
     parameters = [
-        ("source_location", File.JsonFile.get_value_jsondict('psw_settings.json', 'source_location'),
+        ("source_location", File.JsonFile.get_value('psw_settings.json', 'source_location'),
          [move_file]),
-        ("historic_locations", "\n".join(File.JsonFile.get_value_jsondict('psw_settings.json', 'historic_locations', handle_keyERROR=False)),
+        ("historic_locations", "\n".join(File.JsonFile.get_value('psw_settings.json', 'historic_locations', handle_keyERROR=False)),
          [show_historic]),
-        ("backup_locations", "\n".join(File.JsonFile.get_value_jsondict('psw_settings.json', 'backup_locations')),
+        ("backup_locations", "\n".join(File.JsonFile.get_value('psw_settings.json', 'backup_locations')),
          [add_a_backup, remove_a_backup]),
         ("security", eval_security(), [change_password, upgrade_sec, downgrade_sec])]
     logger.info("OP:Settings: Parameters and functionalities LOADED")
@@ -91,7 +91,7 @@ def change_location(window):
         return False
     new_file_path = os.path.join(new_dir_path, "passwors_library.pickle")
     # 2 - Déplacer le fichier
-    old_path = File.JsonFile.get_value_jsondict("psw_settings.json", "source_location")
+    old_path = File.JsonFile.get_value("psw_settings.json", "source_location")
     if not os.path.exists(old_path):
         logger.error("Change location: Original FileNotFound")
         return False
@@ -103,10 +103,10 @@ def change_location(window):
         logger.error(f"Settings:ChangeLocation: CANCELLED \n\tERROR{e}")
         return
     # 3 - Mettre à jour les paramètres
-    historic: list = File.JsonFile.get_value_jsondict("psw_settings.json", "historic_locations")
+    historic: list = File.JsonFile.get_value("psw_settings.json", "historic_locations")
     historic.append(new_file_path)
-    File.JsonFile.set_value_jsondict("psw_settings.json", "historic_locations", historic)
-    File.JsonFile.set_value_jsondict("psw_settings.json", "source_location", new_file_path)
+    File.JsonFile.set_value("psw_settings.json", "historic_locations", historic)
+    File.JsonFile.set_value("psw_settings.json", "source_location", new_file_path)
     logger.info("Settings:ChangeLocation: settings UPDATED")
     return True
 
@@ -143,7 +143,7 @@ def change_key_extensions(lib: AccountLib, new_extensions: int):
         logger.error("Settings:ChangeKeyExtensions: WRONG access")
         return False
     # 2 - make new key and change it
-    old_set = File.JsonFile.get_value_jsondict('psw_settings.json', 'key_extensions')
+    old_set = File.JsonFile.get_value('psw_settings.json', 'key_extensions')
     if new_extensions == 0:
         logger.error("Settings:ChangeKeyExtensions: NO CHANGE")
         return  # Does not re-write the data
@@ -155,7 +155,7 @@ def change_key_extensions(lib: AccountLib, new_extensions: int):
         logger.error("Settings:ChangeKeyExtensions: négative LENGTH extension not allowed")
         return
     # 3 - Update the settings
-    File.JsonFile.set_value_jsondict('psw_settings.json', 'key_extensions', old_set + new_extensions)
+    File.JsonFile.set_value('psw_settings.json', 'key_extensions', old_set + new_extensions)
     # 3 - Re-write the data with new key
     save_accounts_lib(lib, password)
     logger.info("Settings:ChangeKeyExtensions: data RE-SAVED")
@@ -172,9 +172,9 @@ def add_a_backup():
     if not os.path.exists(new_backups_dir):
         os.mkdir(new_backups_dir)
         logger.debug("BackupDir: CREATED")
-    backup_paths = File.JsonFile.get_value_jsondict('psw_settings.json', 'backup_locations')
+    backup_paths = File.JsonFile.get_value('psw_settings.json', 'backup_locations')
     backup_paths.append(new_backups_dir)
-    File.JsonFile.set_value_jsondict('psw_settings.json', 'backup_locations', backup_paths)
+    File.JsonFile.set_value('psw_settings.json', 'backup_locations', backup_paths)
     logger.info(f"Settings:AddBackup: List UPDATED ({new_backups_dir})")
     return True
 
@@ -182,7 +182,7 @@ def add_a_backup():
 def show_backup_list(window):
     """Supprimer un emplacement de sauvegarde"""
     # 1 - récupération des données
-    backup_paths = File.JsonFile.get_value_jsondict('psw_settings.json', 'backup_locations')
+    backup_paths = File.JsonFile.get_value('psw_settings.json', 'backup_locations')
     logger.info(f"Settings:RemoveBackup: START ({len(backup_paths)} locations)")
     if not backup_paths:
         logger.info("Settings:RemoveBackup: CANCELLED (no backup locations)")
@@ -195,7 +195,7 @@ def show_backup_list(window):
         backup_paths[index] = None
         new_list = [path for path in backup_paths if path]
         logger.info(f"Settings:RemoveBackup: list Updated {new_list}")
-        File.JsonFile.set_value_jsondict('psw_settings.json', 'backup_locations', new_list)
+        File.JsonFile.set_value('psw_settings.json', 'backup_locations', new_list)
         logger.info(f"Settings:RemoveBackup: list SAVED")
 
     def get_weight(path):
@@ -241,10 +241,10 @@ def show_backup_list(window):
 # 4 - Fonctions d'analyse et d'information
 def eval_security():
     """Give a score on ten comparing length of data and key, and the age of the password."""
-    extensions = File.JsonFile.get_value_jsondict('psw_settings.json', 'key_extensions') + 1
-    weight_data = os.path.getsize(File.JsonFile.get_value_jsondict('psw_settings.json', 'source_location'))
+    extensions = File.JsonFile.get_value('psw_settings.json', 'key_extensions') + 1
+    weight_data = os.path.getsize(File.JsonFile.get_value('psw_settings.json', 'source_location'))
     rate_data_on_key = weight_data / (32 + extensions * 32)
-    date = File.JsonFile.get_value_jsondict('psw_settings.json', 'last_key_update')
+    date = File.JsonFile.get_value('psw_settings.json', 'last_key_update')
     months_passed = (datetime.datetime.now() - datetime.datetime.strptime(date, "%Y-%m-%d")).days / 30
     score = 10 / ((rate_data_on_key/10+1) * (months_passed/3 + 1)) ** (0.5)
     return f"SCORE {score:.2}/10 (Key repeat {rate_data_on_key:.3}, password months {months_passed:.2})"
@@ -277,7 +277,7 @@ def test_historic(window):
         return shorten_with_one
 
     # 2 - récupération et présentation des données
-    historic_list = File.JsonFile.get_value_jsondict("psw_settings.json", "historic_locations")
+    historic_list = File.JsonFile.get_value("psw_settings.json", "historic_locations")
     param_frame = ttk.Frame(window, borderwidth=2, relief="sunken")  # GUI.last_active_window
     before_path = "/"
     for i, old_path in enumerate(historic_list[::-1]):
