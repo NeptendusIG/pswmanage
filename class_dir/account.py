@@ -82,15 +82,25 @@ class AccountLib:
             self.account_by_keywords.setdefault(word, set()).add(account)
         logger.info(f'Account keywords updated : {account._key_words}')
 
+    def find_accounts_by_keyword(self, word: str, username=True, url=True, email=True, type=True, in_description=True) -> set:
+        ensemble = set()
+        if username:
+            pass
+        if url:
+            ensemble.update(self.account_by_url.get(word, set()))
+        if email:
+            ensemble.update(self.account_by_mail.get(word, set()))
+        if type:
+            ensemble.update(self.account_by_type.get(word, set()))
+        if in_description:
+            # ensemble.update(self.account_by_keywords.get(word, set()))
+            pass
+        return ensemble
+        
     def find_accounts_from_url(self, url):
         ensemble = self.account_by_url.get(url, set())
         return ensemble
 
-    def find_accounts_from_keywords(self, words: Union[set, list]) -> set:
-        ensemble = set()
-        for word in words:
-            ensemble.update(self.account_by_url.get(word, set()))
-        return ensemble
 
     class Account:
 

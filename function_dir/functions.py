@@ -87,9 +87,9 @@ def check_password(accounts_lib: AccountLib, psw_input: str) -> bool:
     return hashed_psw == accounts_lib.password_hash
 
 
-# TODO: Potentiellement à déplacer dans un module interfaces/messageBOX
 # TODO: Ajouter "Choisir" pour choisir un fichier chiffré existant
 # TODO: Ajouter "Créer" même si un fichier existe déjà
+# TODO: Faire fonctionner la fonction de recherche
 # 2 - Fonctions d'interface utilisateur
 def ask_mdp_on_open(window) -> str:
     """Demande mot de passe maitre.
@@ -139,15 +139,18 @@ def update_search_list(search_wind, library: AccountLib, keywords_in_event=None)
     # 1 - Récupérer les accounts correspondants (potentiellement)
     if not keywords_in_event is None:
         keywords = keywords_in_event.widget.get().split()
+        logger.info(f"Research: keywords: {keywords}")
     else :
+        logger.info(f"Research: keywords: None (All accounts)")
         keywords = []
+    # 2 - Trouver les comptes correspondants
     accounts = set()
     for word in keywords:
-        accounts.update(library.find_accounts_from_keywords(word))
+        accounts.update(library.find_accounts_by_keyword(word))
         logger.info(f"Research: update: {accounts}")
     if not accounts:
         accounts = library.account_totset
-    # 2 - Afficher les comptes dans la fenêtre
+    # 3 - Afficher les comptes dans la fenêtre
     display_accounts_set(search_wind, accounts)
 
 

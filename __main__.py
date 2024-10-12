@@ -49,9 +49,13 @@ def chercher_mdp(library):
     tk.Label(search_wind, text="Rechercher :").grid(row=0, column=0, padx=10, pady=5, sticky="w")
     champ = ttk.Entry(search_wind)
     champ.grid(row=0, column=1, padx=10, pady=5, sticky="w")
-    champ.bind("<Return>", lambda x: update_search_list(search_wind, library, x))
+    # - Cadre des comptes trouvés -
+    frame_results = ttk.Frame(search_wind)
+    frame_results.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
+    # (recherche sur Enter)
+    champ.bind("<Return>", lambda x: update_search_list(frame_results, library, x))
     # - Initialiser la liste complète -
-    update_search_list(search_wind, library, None)
+    update_search_list(frame_results, library, None)
     # - Démarrer la fenêtre -
     logger.info("Research: initialized")
     search_wind.mainloop()
