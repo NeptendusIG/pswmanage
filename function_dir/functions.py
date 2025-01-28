@@ -134,18 +134,16 @@ def ask_mdp_on_open(window) -> str:
     return password.get()
 
 
-def update_search_list(search_wind, library: AccountLib, keywords_in_event=None):
+def update_search_list(search_wind, library: AccountLib, keywords=[]):
     logger.info("OP-Research: begin SORT")
     # 0 - Effacer les anciens comptes
     for widget in search_wind.winfo_children():
         widget.destroy()
     # 1 - Récupérer les accounts correspondants (potentiellement)
-    if not keywords_in_event is None:
-        keywords = keywords_in_event.widget.get().split()
+    if keywords:
         logger.info(f"Research: keywords: {keywords}")
     else :
         logger.info(f"Research: keywords: None (All accounts)")
-        keywords = []
     # 2 - Trouver les comptes correspondants
     accounts = set()
     for word in keywords:

@@ -9,6 +9,7 @@
 # Modules
 import tkinter as tk
 import ttkbootstrap as ttk
+import sys
 # Local
 from utility import GUI, File, Settings
 from pswmanage.function_dir.functions import ask_mdp_on_open, decrypt, load_encrypt_file, check_password, save_accounts_lib, update_search_list
@@ -19,6 +20,7 @@ from pswmanage.class_dir.account import AccountLib
 # Paramètres
 logger = Settings.setup_logging("debugging")
 logger.info("Lancement du programme.")
+OPTIONAL_GIVEN_SHEARCH = sys.argv[1] if len(sys.argv) > 1 else None
 
 # Classes
 # -- VARIABLES INITIALES / GLOBALES --
@@ -42,7 +44,7 @@ def ajouter_mdp(library):
         logger.info("OP-Add account: ADDED\n")
 
 
-def chercher_mdp(library, root_window):
+def chercher_mdp(library, root_window, given_search=None):
     logger.info("OP-Research: START")
     # search_wind = GUI.set_basic_window("Recherche", themename='minty')
     search_wind = tk.Frame(root_window, borderwidth=2, relief="sunken")
@@ -50,14 +52,20 @@ def chercher_mdp(library, root_window):
     # - Barre de recherche -
     tk.Label(search_wind, text="Rechercher :", font="Calibri 18 bold").grid(row=0, column=0, padx=10, pady=5, sticky="e")
     champ = ttk.Entry(search_wind)
+    if given_search:
+        logger.debug(f"Research: given search = {given_search}")
+        champ.insert(0, given_search)
     champ.grid(row=0, column=1, padx=10, pady=5, sticky="we")
     # - Cadre des comptes trouvés -
     frame_results = ttk.Frame(search_wind)
     frame_results.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
     # (recherche sur Enter)
-    champ.bind("<Return>", lambda x: update_search_list(frame_results, library, x))
+    champ.bind("<Return>", lambda x: update_search_list(frame_results, library, x.widget.get().split()))
     # - Initialiser la liste complète -
-    update_search_list(frame_results, library, None)
+    if given_search:
+        update_search_list(frame_results, library, [given_search])
+    else: 
+        update_search_list(frame_results, library, None)
     # - Démarrer la fenêtre -
     logger.info("Research: initialized")
     # search_wind.mainloop()
@@ -99,7 +107,7 @@ def afficher_fenetre_boutons():
         'Paramètres': lambda: fenetre_controle_parametres(accounts)
     }
     GUI.set_cmd_buttons(root_window, functions_dct, side="left")  # GLOBAL functions_dct
-    root_window.after(0, lambda: chercher_mdp(accounts, root_window))
+    root_window.after(0, lambda: chercher_mdp(accounts, root_window, given_search=OPTIONAL_GIVEN_SHEARCH))
     logger.info("OP-Command Window: initialized")
     root_window.mainloop()
 
