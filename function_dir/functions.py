@@ -165,7 +165,9 @@ def display_accounts_set(window: tk.Tk, accounts: set[AccountLib.Account]):
     """
     accounts: list[AccountLib.Account] = list(accounts)
     accounts.sort(key=lambda x: x.type.lower())
-    dataset = {"email" : set([acc.email for acc in accounts])}
+    dataset = {"email" : set([acc.email for acc in accounts]),
+               "type" : set([acc.type for acc in accounts])
+               }
     logger.info(f"data found: {len(dataset['email'])} accounts")
     buttons = {"Voir détails": lambda x: x.individual_interface(dataset), "Copier PSW": lambda x: x.copy_attr("password")}
     to_string = lambda objet, frame: objet.to_texts_widget(frame)
