@@ -165,10 +165,15 @@ def display_accounts_set(window: tk.Tk, accounts: set[AccountLib.Account]):
     """
     accounts: list[AccountLib.Account] = list(accounts)
     accounts.sort(key=lambda x: x.type.lower())
-    buttons = {"Voir détails": lambda x: x.individual_interface(), "Copier PSW": lambda x: x.copy_attr("password")}
+    dataset = {"email" : set([acc.email for acc in accounts])}
+    logger.info(f"data found: {len(dataset['email'])} accounts")
+    buttons = {"Voir détails": lambda x: x.individual_interface(dataset), "Copier PSW": lambda x: x.copy_attr("password")}
     to_string = lambda objet, frame: objet.to_texts_widget(frame)
     GUI.vertical_grid_on_objects(accounts, to_string, buttons, window=window, first_row=1, row_separator=False)
 
+def get_dataset_from_accounts(accounts: list[AccountLib.Account]):
+    emails = [acc.email for acc in accounts]
+    return emails
 
 # 3 - Fonctions sur fichiers (Création, Lecture, Écriture)
 def creation_new_library() -> None:

@@ -163,7 +163,7 @@ class AccountLib:
             logger.info(f'Key words created : {group}')
             return group
 
-        def individual_interface(self):
+        def individual_interface(self, extern_sample: dict[str, set[str]] =None):
             """Interface pour accéder aux infos d'un compte (copier/modifier)"""
             # Création de la fenêtre
             window = GUI.set_basic_window("Account Information")
@@ -172,14 +172,14 @@ class AccountLib:
             attributs_with_button = ['url', 'username', 'password', 'email']
             # Initialisation des champs
             interact_var = {attribut: tk.StringVar() for attribut in attributs}
-            entries: dict[str, ttk.Entry] = {}
+            entries: dict[str, GUI.SuggestionsEntry] = {}
             # Pour chaque attribut -> ligne
             for row, attr in enumerate(attributs):
                 # Nom du champ
                 ttk.Label(window, text=attr.capitalize() + ":").grid(row=row, column=0, sticky="e")
                 # Champ de saisie
                 interact_var[attr].set(getattr(self, attr))  # Valeur par défaut /actuelle
-                entries[attr] = ttk.Entry(window, textvariable=interact_var[attr])  # Champ de saisie
+                entries[attr] = GUI.SuggestionsEntry(window, extern_sample.get(attr, set()), textvariable=interact_var[attr])  # Champ de saisie
                 entries[attr].grid(row=row, column=1)  # Positionnement
                 entries[attr].bind('<Return>', lambda event, att=attr: setattr(self, att, entries[
                     att].get()))  # Validation par touche enter
@@ -189,6 +189,8 @@ class AccountLib:
                     ttk.Button(window, text=f"Copy {attr}", command=copy).grid(row=row, column=2)
             # Lancement de la fenêtre
             window.mainloop()
+
+
 
         def copy_attr(self, attr):
             pyperclip.copy(getattr(self, attr))
