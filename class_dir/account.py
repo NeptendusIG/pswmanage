@@ -124,6 +124,24 @@ class AccountLib:
             match_name = re.match(r"(https?://)?([^/]+)", self.url)
             enterprise = match_name.group(2)
             return f'{tag:<20} - {enterprise:<30}\t- {self.email} / {self.username}'
+
+        def to_texts_widget(self, frame: tk.Frame):
+            """Ajoute horizontalement les attributs sous forme de WIDGET tk.Text (Sélectionnables; pas modifiables)"""
+            typeWD = tk.Text(frame, wrap="word", height=1, width=8)
+            typeWD.insert("1.0", self.type)
+            typeWD.configure(state="disabled")
+            typeWD.pack(side="left")
+
+            urlWD = tk.Text(frame, wrap="word", height=1, width=20)
+            urlWD.insert("1.0", self.url)
+            urlWD.configure(state="disabled")
+            urlWD.pack(side="left")
+            
+            emailWD = tk.Text(frame, wrap="word", height=1, width=25)
+            emailWD.insert("1.0", self.email)
+            emailWD.configure(state="disabled")
+            emailWD.pack(side="left") 
+        
         
         def refresh(self):
             logger.debug('Account refreshed')

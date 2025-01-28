@@ -166,7 +166,8 @@ def display_accounts_set(window: tk.Tk, accounts: set[AccountLib.Account]):
     accounts: list[AccountLib.Account] = list(accounts)
     accounts.sort(key=lambda x: x.type.lower())
     buttons = {"Voir détails": lambda x: x.individual_interface(), "Copier PSW": lambda x: x.copy_attr("password")}
-    GUI.parse_buttons_on_object(accounts, buttons, window=window, first_row=1, row_separator=True)
+    to_string = lambda objet, frame: objet.to_texts_widget(frame)
+    GUI.vertical_grid_on_objects(accounts, to_string, buttons, window=window, first_row=1, row_separator=False)
 
 
 # 3 - Fonctions sur fichiers (Création, Lecture, Écriture)
