@@ -98,7 +98,7 @@ def afficher_fenetre_boutons():
         'Apprendre': lambda: memorisation_mdp(accounts),
         'Paramètres': lambda: fenetre_controle_parametres(accounts)
     }
-    GUI.set_cmd_buttons(root_window, functions_dct)  # GLOBAL functions_dct
+    GUI.set_cmd_buttons(root_window, functions_dct, side="left")  # GLOBAL functions_dct
     root_window.after(0, lambda: chercher_mdp(accounts, root_window))
     logger.info("OP-Command Window: initialized")
     root_window.mainloop()
