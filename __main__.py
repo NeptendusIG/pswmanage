@@ -65,7 +65,7 @@ def chercher_mdp(library, root_window, given_search=None):
     if given_search:
         update_search_list(frame_results, library, [given_search])
     else: 
-        update_search_list(frame_results, library, None)
+        update_search_list(frame_results, library, [])
     # - Démarrer la fenêtre -
     logger.info("Research: initialized")
     # search_wind.mainloop()

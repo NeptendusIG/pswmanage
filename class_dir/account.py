@@ -190,8 +190,6 @@ class AccountLib:
             # Lancement de la fenêtre
             window.mainloop()
 
-
-
         def copy_attr(self, attr):
             pyperclip.copy(getattr(self, attr))
             if attr != 'password':

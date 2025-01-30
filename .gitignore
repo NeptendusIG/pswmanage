@@ -10,6 +10,7 @@ main_settings.json
 
 # Exclure les dossiers spécifiques
 __pycache__/
+class_dir/__pycache__/
 env/
 build/
 dist/
