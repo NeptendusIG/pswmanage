@@ -12,12 +12,12 @@
 import os, sys
 if __name__ == '__main__':
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utility import GUI, File, Settings
+import logging
 import tkinter as tk
 import ttkbootstrap as ttk
 
 # SETTINGS
-logger = Settings.setup_logging("debugging")
+logger = logging.getLogger('debugging')
 
 
 class SuggestionsEntry(tk.Entry):
