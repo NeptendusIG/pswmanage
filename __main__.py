@@ -11,14 +11,14 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import sys
 # Local
-from utility import GUI, File, Settings
+from utility import GUI, File, LogConfig
 from pswmanage.function_dir.functions import ask_mdp_on_open, decrypt, load_encrypt_file, check_password, save_accounts_lib, update_search_list
 from pswmanage.function_dir.manage_settings import add_widget_to_access_settings
 # Classes
 from pswmanage.class_dir.account import AccountLib
 
 # Paramètres
-logger = Settings.setup_logging("debugging")
+logger = LogConfig.set_logging_config("debugging", "data/logs")
 logger.info("Lancement du programme.")
 OPTIONAL_GIVEN_SHEARCH = sys.argv[1] if len(sys.argv) > 1 else None
 
