@@ -13,6 +13,7 @@ from typing import Union
 logger = logging.getLogger('debugging')
 
 
+
 class AccountLib:
 
     def __init__(self, owner):
@@ -119,6 +120,15 @@ class AccountLib:
             # self._account_proper_lib = account_proper_lib
             logger.info('Account initialized')
 
+        def refresh(self):
+            """Utilitaire, recréation pour Library si non-compatibilité"""
+            logger.debug('Account refreshed')
+            return NewAccountLib.Account(self.username, self.password, self.url, 
+                                         self.email, self.type, self.description, self.phone)
+
+
+        # -- Représentation de l'objet --
+
         def __str__(self):
             tag = f'{self.type}' if self.type else ''
             match_name = re.match(r"(https?://)?([^/]+)", self.url)
@@ -142,15 +152,11 @@ class AccountLib:
             emailWD.configure(state="disabled")
             emailWD.pack(side="left") 
         
-        
-        def refresh(self):
-            logger.debug('Account refreshed')
-            return NewAccountLib.Account(self.username, self.password, self.url, 
-                                         self.email, self.type, self.description, self.phone)
 
         def data(self):
             return f'{self.email} - {self.type} - {self.phone}  \n{self.description}'  # - {self._id}
 
+        # -- Intéraction avec l'objet --
         def get_key_words(self):
             group = set(self.username.split())
             if isinstance(self.description, str):
@@ -162,6 +168,23 @@ class AccountLib:
             group.add(self.type)
             logger.info(f'Key words created : {group}')
             return group
+
+        
+        def copy_attr(self, attr):
+            pyperclip.copy(getattr(self, attr))
+            if attr != 'password':
+                logger.info(f'Copy {attr} ({getattr(self, attr)})')
+            else:
+                logger.info(f'Copy {attr} (*******)')
+
+        def past_to_attr(self, attr):
+            setattr(self, attr, pyperclip.paste())
+            if attr != 'password':
+                logger.info(f'Paste {attr} ({getattr(self, attr)})')
+            else:
+                logger.info(f'Paste {attr} (*******)')
+
+        # -- Interface utilisateur --
 
         def individual_interface(self, extern_sample: dict[str, set[str]] =None):
             """Interface pour accéder aux infos d'un compte (copier/modifier)"""
@@ -189,20 +212,6 @@ class AccountLib:
                     ttk.Button(window, text=f"Copy {attr}", command=copy).grid(row=row, column=2)
             # Lancement de la fenêtre
             window.mainloop()
-
-        def copy_attr(self, attr):
-            pyperclip.copy(getattr(self, attr))
-            if attr != 'password':
-                logger.info(f'Copy {attr} ({getattr(self, attr)})')
-            else:
-                logger.info(f'Copy {attr} (*******)')
-
-        def past_to_attr(self, attr):
-            setattr(self, attr, pyperclip.paste())
-            if attr != 'password':
-                logger.info(f'Paste {attr} ({getattr(self, attr)})')
-            else:
-                logger.info(f'Paste {attr} (*******)')
 
         def initialisation_interface(self):
             """Interface pour accéder aux infos d'un compte (copier/modifier)"""
