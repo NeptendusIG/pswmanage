@@ -9,7 +9,7 @@
 # -- IMPORTS --
 # Modules
 # from pswmanage.utilitaire.utility import File, Settings, GUI
-from utility import File, Settings, GUI
+from utility import File, GUI
 from pswmanage.class_dir.account import AccountLib
 from typing import Any, Optional
 import pickle, hashlib, os, sys, datetime
@@ -18,7 +18,8 @@ import ttkbootstrap as ttk  # remplace: from tkinter import ttk
 
 
 # Paramètres
-logger = Settings.setup_logging("debugging")
+import logging
+logger = logging.getLogger('debugging')
 
 # Classes
 

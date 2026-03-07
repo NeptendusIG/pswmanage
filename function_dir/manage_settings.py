@@ -20,12 +20,13 @@ import ttkbootstrap as ttk
 # Importations spécifiques
 from typing import Any, Optional
 # Modules locaux (et classes)
-from utility import File, Settings, GUI  # Classes de fonctions
+from utility import File, Settings, LogConfig, GUI  # Classes de fonctions
 from pswmanage.class_dir.account import AccountLib
 from pswmanage.function_dir.functions import save_accounts_lib, extend_the_key, check_password
 
 # Paramètres
-logger = Settings.setup_logging("debugging")
+import logging
+logger = logging.getLogger('debugging')
 
 
 # -- FONCTIONS DÉFINIES --
