@@ -9,16 +9,18 @@
 # Modules
 import tkinter as tk
 import ttkbootstrap as ttk
+import sys
 # Local
-from utility import GUI, File, Settings
+from utility import GUI, File, LogConfig
 from pswmanage.function_dir.functions import ask_mdp_on_open, decrypt, load_encrypt_file, check_password, save_accounts_lib, update_search_list
 from pswmanage.function_dir.manage_settings import add_widget_to_access_settings
 # Classes
 from pswmanage.class_dir.account import AccountLib
 
 # Paramètres
-logger = Settings.setup_logging("debugging")
+logger = LogConfig.set_logging_config("debugging", "data/logs")
 logger.info("Lancement du programme.")
+OPTIONAL_GIVEN_SHEARCH = sys.argv[1] if len(sys.argv) > 1 else None
 
 # Classes
 # -- VARIABLES INITIALES / GLOBALES --
@@ -42,23 +44,31 @@ def ajouter_mdp(library):
         logger.info("OP-Add account: ADDED\n")
 
 
-def chercher_mdp(library):
+def chercher_mdp(library, root_window, given_search=None):
     logger.info("OP-Research: START")
-    search_wind = GUI.set_basic_window("Recherche", themename='minty')
+    # search_wind = GUI.set_basic_window("Recherche", themename='minty')
+    search_wind = tk.Frame(root_window, borderwidth=2, relief="sunken")
+    search_wind.pack(padx=10, pady=15, fill="both", expand=True)
     # - Barre de recherche -
-    tk.Label(search_wind, text="Rechercher :").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+    tk.Label(search_wind, text="Rechercher :", font="Calibri 18 bold").grid(row=0, column=0, padx=10, pady=5, sticky="e")
     champ = ttk.Entry(search_wind)
-    champ.grid(row=0, column=1, padx=10, pady=5, sticky="w")
+    if given_search:
+        logger.debug(f"Research: given search = {given_search}")
+        champ.insert(0, given_search)
+    champ.grid(row=0, column=1, padx=10, pady=5, sticky="we")
     # - Cadre des comptes trouvés -
     frame_results = ttk.Frame(search_wind)
     frame_results.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
     # (recherche sur Enter)
-    champ.bind("<Return>", lambda x: update_search_list(frame_results, library, x))
+    champ.bind("<Return>", lambda x: update_search_list(frame_results, library, x.widget.get().split()))
     # - Initialiser la liste complète -
-    update_search_list(frame_results, library, None)
+    if given_search:
+        update_search_list(frame_results, library, [given_search])
+    else: 
+        update_search_list(frame_results, library, [])
     # - Démarrer la fenêtre -
     logger.info("Research: initialized")
-    search_wind.mainloop()
+    # search_wind.mainloop()
 
 
 def memorisation_mdp(library):
@@ -77,12 +87,6 @@ def fenetre_controle_parametres(library):
 
 
 # -- VARIABLES INITIALES/GLOBALES --
-functions_dct = {
-    'Ajouter': lambda: ajouter_mdp(accounts),
-    'Chercher': lambda: chercher_mdp(accounts),
-    'Apprendre': lambda: memorisation_mdp(accounts),
-    'Paramètres': lambda: fenetre_controle_parametres(accounts)
-}
 
 
 # -- FONCTIONS MAÎTRES --
@@ -93,11 +97,17 @@ def charger_mdp():  # -> AccountLib
     encrypt_bytes = load_encrypt_file()  # File path from settings
     return decrypt(encrypt_bytes, password)
 
-
 def afficher_fenetre_boutons():
     logger.info("\nOP-Command Window: START")
-    root_window = GUI.set_basic_window("Password Manager", themename='minty', size="400x200")
-    GUI.set_cmd_buttons(root_window, functions_dct)  # GLOBAL functions_dct
+    root_window = GUI.set_basic_window("Password Manager", themename='minty')
+    functions_dct = {
+        'Ajouter': lambda: ajouter_mdp(accounts),
+        'Chercher': lambda: chercher_mdp(accounts, root_window),
+        'Apprendre': lambda: memorisation_mdp(accounts),
+        'Paramètres': lambda: fenetre_controle_parametres(accounts)
+    }
+    GUI.set_cmd_buttons(root_window, functions_dct, side="left")  # GLOBAL functions_dct
+    root_window.after(0, lambda: chercher_mdp(accounts, root_window, given_search=OPTIONAL_GIVEN_SHEARCH))
     logger.info("OP-Command Window: initialized")
     root_window.mainloop()
 

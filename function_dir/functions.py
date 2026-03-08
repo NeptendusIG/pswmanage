@@ -9,7 +9,7 @@
 # -- IMPORTS --
 # Modules
 # from pswmanage.utilitaire.utility import File, Settings, GUI
-from utility import File, Settings, GUI
+from utility import File, GUI
 from pswmanage.class_dir.account import AccountLib
 from typing import Any, Optional
 import pickle, hashlib, os, sys, datetime
@@ -18,7 +18,8 @@ import ttkbootstrap as ttk  # remplace: from tkinter import ttk
 
 
 # Paramètres
-logger = Settings.setup_logging("debugging")
+import logging
+logger = logging.getLogger('debugging')
 
 # Classes
 
@@ -134,18 +135,16 @@ def ask_mdp_on_open(window) -> str:
     return password.get()
 
 
-def update_search_list(search_wind, library: AccountLib, keywords_in_event=None):
+def update_search_list(search_wind, library: AccountLib, keywords=[]):
     logger.info("OP-Research: begin SORT")
     # 0 - Effacer les anciens comptes
     for widget in search_wind.winfo_children():
         widget.destroy()
     # 1 - Récupérer les accounts correspondants (potentiellement)
-    if not keywords_in_event is None:
-        keywords = keywords_in_event.widget.get().split()
+    if keywords:
         logger.info(f"Research: keywords: {keywords}")
     else :
         logger.info(f"Research: keywords: None (All accounts)")
-        keywords = []
     # 2 - Trouver les comptes correspondants
     accounts = set()
     for word in keywords:
@@ -165,9 +164,17 @@ def display_accounts_set(window: tk.Tk, accounts: set[AccountLib.Account]):
     """
     accounts: list[AccountLib.Account] = list(accounts)
     accounts.sort(key=lambda x: x.type.lower())
-    buttons = {"Voir détails": lambda x: x.individual_interface(), "Copier PSW": lambda x: GUI.copy_to_clipboard(x.password)}
-    GUI.parse_buttons_on_object(accounts, buttons, window=window, first_row=1, row_separator=True)
+    dataset = {"email" : set([acc.email for acc in accounts]),
+               "type" : set([acc.type for acc in accounts])
+               }
+    logger.info(f"data found: {len(dataset['email'])} accounts")
+    buttons = {"Voir détails": lambda x: x.individual_interface(dataset), "Copier PSW": lambda x: x.copy_attr("password")}
+    to_string = lambda objet, frame: objet.to_texts_widget(frame)
+    GUI.vertical_grid_on_objects(accounts, to_string, buttons, window=window, first_row=1, row_separator=False)
 
+def get_dataset_from_accounts(accounts: list[AccountLib.Account]):
+    emails = [acc.email for acc in accounts]
+    return emails
 
 # 3 - Fonctions sur fichiers (Création, Lecture, Écriture)
 def creation_new_library() -> None:

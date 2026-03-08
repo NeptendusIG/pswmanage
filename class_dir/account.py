@@ -13,6 +13,7 @@ from typing import Union
 logger = logging.getLogger('debugging')
 
 
+
 class AccountLib:
 
     def __init__(self, owner):
@@ -119,20 +120,43 @@ class AccountLib:
             # self._account_proper_lib = account_proper_lib
             logger.info('Account initialized')
 
-        def __str__(self):
-            tag = f'{self.type}' if self.type else ''
-            match_name = re.match(r"(https?://)?([^/]+)", self.url)
-            enterprise = match_name.group(2)
-            return f'{tag:<20} - {enterprise:<30}\t- {self.email}/{self.username}'
-        
         def refresh(self):
+            """Utilitaire, recréation pour Library si non-compatibilité"""
             logger.debug('Account refreshed')
             return NewAccountLib.Account(self.username, self.password, self.url, 
                                          self.email, self.type, self.description, self.phone)
 
+
+        # -- Représentation de l'objet --
+
+        def __str__(self):
+            tag = f'{self.type}' if self.type else ''
+            match_name = re.match(r"(https?://)?([^/]+)", self.url)
+            enterprise = match_name.group(2)
+            return f'{tag:<20} - {enterprise:<30}\t- {self.email} / {self.username}'
+
+        def to_texts_widget(self, frame: tk.Frame):
+            """Ajoute horizontalement les attributs sous forme de WIDGET tk.Text (Sélectionnables; pas modifiables)"""
+            typeWD = tk.Text(frame, wrap="word", height=1, width=8)
+            typeWD.insert("1.0", self.type)
+            typeWD.configure(state="disabled")
+            typeWD.pack(side="left")
+
+            urlWD = tk.Text(frame, wrap="word", height=1, width=20)
+            urlWD.insert("1.0", self.url)
+            urlWD.configure(state="disabled")
+            urlWD.pack(side="left")
+            
+            emailWD = tk.Text(frame, wrap="word", height=1, width=25)
+            emailWD.insert("1.0", self.email)
+            emailWD.configure(state="disabled")
+            emailWD.pack(side="left") 
+        
+
         def data(self):
             return f'{self.email} - {self.type} - {self.phone}  \n{self.description}'  # - {self._id}
 
+        # -- Intéraction avec l'objet --
         def get_key_words(self):
             group = set(self.username.split())
             if isinstance(self.description, str):
@@ -145,33 +169,7 @@ class AccountLib:
             logger.info(f'Key words created : {group}')
             return group
 
-        def individual_interface(self):
-            """Interface pour accéder aux infos d'un compte (copier/modifier)"""
-            # Création de la fenêtre
-            window = GUI.set_basic_window("Account Information")
-            # Attributs à afficher / accessibles
-            attributs = ['url', 'username', 'password', 'email', 'type', 'description', 'phone']
-            attributs_with_button = ['url', 'username', 'password', 'email']
-            # Initialisation des champs
-            interact_var = {attribut: tk.StringVar() for attribut in attributs}
-            entries: dict[str, ttk.Entry] = {}
-            # Pour chaque attribut -> ligne
-            for row, attr in enumerate(attributs):
-                # Nom du champ
-                ttk.Label(window, text=attr.capitalize() + ":").grid(row=row, column=0, sticky="e")
-                # Champ de saisie
-                interact_var[attr].set(getattr(self, attr))  # Valeur par défaut /actuelle
-                entries[attr] = ttk.Entry(window, textvariable=interact_var[attr])  # Champ de saisie
-                entries[attr].grid(row=row, column=1)  # Positionnement
-                entries[attr].bind('<Return>', lambda event, att=attr: setattr(self, att, entries[
-                    att].get()))  # Validation par touche enter
-                # Button si nécessaire
-                if attr in attributs_with_button:
-                    copy = lambda attribut=attr: self.copy_attr(attribut)
-                    ttk.Button(window, text=f"Copy {attr}", command=copy).grid(row=row, column=2)
-            # Lancement de la fenêtre
-            window.mainloop()
-
+        
         def copy_attr(self, attr):
             pyperclip.copy(getattr(self, attr))
             if attr != 'password':
@@ -185,6 +183,35 @@ class AccountLib:
                 logger.info(f'Paste {attr} ({getattr(self, attr)})')
             else:
                 logger.info(f'Paste {attr} (*******)')
+
+        # -- Interface utilisateur --
+
+        def individual_interface(self, extern_sample: dict[str, set[str]] =None):
+            """Interface pour accéder aux infos d'un compte (copier/modifier)"""
+            # Création de la fenêtre
+            window = GUI.set_basic_window("Account Information")
+            # Attributs à afficher / accessibles
+            attributs = ['url', 'username', 'password', 'email', 'type', 'description', 'phone']
+            attributs_with_button = ['url', 'username', 'password', 'email']
+            # Initialisation des champs
+            interact_var = {attribut: tk.StringVar() for attribut in attributs}
+            entries: dict[str, GUI.SuggestionsEntry] = {}
+            # Pour chaque attribut -> ligne
+            for row, attr in enumerate(attributs):
+                # Nom du champ
+                ttk.Label(window, text=attr.capitalize() + ":").grid(row=row, column=0, sticky="e")
+                # Champ de saisie
+                interact_var[attr].set(getattr(self, attr))  # Valeur par défaut /actuelle
+                entries[attr] = GUI.SuggestionsEntry(window, extern_sample.get(attr, set()), textvariable=interact_var[attr])  # Champ de saisie
+                entries[attr].grid(row=row, column=1)  # Positionnement
+                entries[attr].bind('<Return>', lambda event, att=attr: setattr(self, att, entries[
+                    att].get()))  # Validation par touche enter
+                # Button si nécessaire
+                if attr in attributs_with_button:
+                    copy = lambda attribut=attr: self.copy_attr(attribut)
+                    ttk.Button(window, text=f"Copy {attr}", command=copy).grid(row=row, column=2)
+            # Lancement de la fenêtre
+            window.mainloop()
 
         def initialisation_interface(self):
             """Interface pour accéder aux infos d'un compte (copier/modifier)"""
