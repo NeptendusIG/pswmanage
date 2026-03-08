@@ -25,7 +25,7 @@ OPTIONAL_GIVEN_SHEARCH = sys.argv[1] if len(sys.argv) > 1 else None
 # Classes
 # -- VARIABLES INITIALES / GLOBALES --
 default_settings = {
-    "source_location": "data/input/psw_library.pickle",
+    "source_location": "data/input/psw_library.pickle",  #user/.config/pswmanage
     "historic_locations": [],
     "backup_locations": [],
     "key_extensions": 0,
@@ -49,6 +49,9 @@ def chercher_mdp(library, root_window, given_search=None):
     # search_wind = GUI.set_basic_window("Recherche", themename='minty')
     search_wind = tk.Frame(root_window, borderwidth=2, relief="sunken")
     search_wind.pack(padx=10, pady=15, fill="both", expand=True)
+    
+    search_wind.grid_rowconfigure(1, weight=1)
+    search_wind.grid_columnconfigure(1, weight=1)
     # - Barre de recherche -
     tk.Label(search_wind, text="Rechercher :", font="Calibri 18 bold").grid(row=0, column=0, padx=10, pady=5, sticky="e")
     champ = ttk.Entry(search_wind)
@@ -56,9 +59,47 @@ def chercher_mdp(library, root_window, given_search=None):
         logger.debug(f"Research: given search = {given_search}")
         champ.insert(0, given_search)
     champ.grid(row=0, column=1, padx=10, pady=5, sticky="we")
-    # - Cadre des comptes trouvés -
-    frame_results = ttk.Frame(search_wind)
-    frame_results.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
+        
+     # - Zone scrollable des résultats -
+    results_container = ttk.Frame(search_wind)
+    results_container.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
+
+    results_container.grid_rowconfigure(0, weight=1)
+    results_container.grid_columnconfigure(0, weight=1)
+
+    canvas = tk.Canvas(results_container, highlightthickness=0, width=760, height=500)
+    scrollbar = ttk.Scrollbar(results_container, orient="vertical", command=canvas.yview)
+
+    canvas.grid(row=0, column=0, sticky="nsew")
+    scrollbar.grid(row=0, column=1, sticky="ns")
+
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    frame_results = ttk.Frame(canvas)
+    window_id = canvas.create_window((0, 0), window=frame_results, anchor="nw")
+
+
+    # Met à jour la zone scrollable
+    def _on_frame_configure(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+
+    frame_results.bind("<Configure>", _on_frame_configure)
+
+    # Force la largeur du frame interne à suivre celle du canvas
+    def _on_canvas_configure(event):
+        canvas.itemconfigure(window_id, width=event.width)
+
+    canvas.bind("<Configure>", _on_canvas_configure)
+
+    # Scroll molette (Windows/macOS)
+    def _on_frame_configure(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+
+    frame_results.bind("<Configure>", _on_frame_configure)
+
+        # - Cadre des comptes trouvés -
+    #frame_results = ttk.Frame(search_wind)
+    #frame_results.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
     # (recherche sur Enter)
     champ.bind("<Return>", lambda x: update_search_list(frame_results, library, x.widget.get().split()))
     # - Initialiser la liste complète -
@@ -92,7 +133,7 @@ def fenetre_controle_parametres(library):
 # -- FONCTIONS MAÎTRES --
 def charger_mdp():  # -> AccountLib
     logger.info("\nOP-Recuperation Data : START")
-    window = GUI.set_basic_window("Entrez le mot de passe", size="300x150")
+    window = GUI.set_basic_window("Entrez le mot de passe", size="500x250")
     password = ask_mdp_on_open(window)
     encrypt_bytes = load_encrypt_file()  # File path from settings
     return decrypt(encrypt_bytes, password)
