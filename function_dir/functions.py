@@ -95,21 +95,41 @@ def check_password(accounts_lib: AccountLib, psw_input: str) -> bool:
 def ask_mdp_on_open(window) -> str:
     """Demande mot de passe maitre.
     Si ANNULER : Stop le programme
-    Si FileNotFound: Bouton Nouveau : Créer un fichier"""
+    Si SELECTIONNER : Sélection d'un fichier
+    Si NOUVEAU : Créer un fichier"""
     source_path = File.JsonFile.get_value('psw_settings.json', 'source_location', default=False)
     # Variable pour stocker le mot de passe
     password = tk.StringVar()
+    current_path = tk.StringVar(value=source_path)
 
     # Fonctions pour les boutons
     def on_validate(args=None):
         logger.info("Récup: entry SEND")
         password.set(entry.get())
-        if os.path.isfile(source_path):
+        if os.path.isfile(current_path.get()):
             logger.debug("Récup: entry CAPTURED")
             window.quit()
             window.withdraw()
         else:
             logger.debug("Récup: FileNotFound")
+
+    def on_search(args=None):
+        logger.info("Récup: path existing library")
+        new_path = GUI.ask_file("Librairie de MDP")
+        if new_path:
+            current_path.set(new_path)
+            # Mettre paramètres à jour
+            history: list = File.JsonFile.get_value("psw_settings.json", "historic_locations")
+            if history[-1] != new_path :
+                history.append(new_path)
+            count_used_before = history.count(new_path)
+            if count_used_before >= 2 :
+                logging.info(f"Récup: AJOUT multiple dans History ({count_used_before})")
+            File.JsonFile.set_value("psw_settings.json", "historic_locations", history)
+            File.JsonFile.set_value("psw_settings.json", "source_location", new_path)
+        else:
+            logger.info("Récup: FAILED to find a path")
+    
 
     # Libellé, champ de saisie
     label = ttk.Label(window, text="Entrez le mot de passe :")
@@ -117,18 +137,32 @@ def ask_mdp_on_open(window) -> str:
     entry = ttk.Entry(window, show="*", textvariable=password)
     entry.pack(pady=5)
     entry.bind('<Return>', on_validate)
+    # Compte sélectionner
+    ttk.Label(window, textvariable=current_path).pack(pady=5)
+    # Historique des bibliothèques
+    hist_frame = ttk.Frame(window)
+    hist_frame.pack(pady=10)
+    history: list = File.JsonFile.get_value("psw_settings.json", "historic_locations")
+    added = []
+    for path in history:
+        if os.path.exists(path) and (path not in added):
+            added.append(path)
+            ttk.Label(hist_frame, text=path).pack(pady=3)
+        else:
+            logging.info(f"Récup: History: FileNotFound ({path})")
     # Frame pour contenir les BOUTONS
     button_frame = ttk.Frame(window)
     button_frame.pack(padx=10, pady=10, fill=tk.X)
     # Boutons
     button_cancel = ttk.Button(button_frame, text="Annuler", command=lambda: sys.exit("Programme annulé"))
     button_cancel.pack(side=tk.LEFT, padx=10, pady=10, expand=True, fill=tk.X)
+    button_selection = ttk.Button(button_frame, text="Rechercher", command=on_search)
+    button_selection.pack(side=tk.LEFT, padx=10, pady=10, expand=True, fill=tk.X)
     button_validate = ttk.Button(button_frame, text="Valider", command=on_validate)
     button_validate.pack(side=tk.LEFT, padx=10, pady=10, expand=True, fill=tk.X)
     # Bouton de création d'une librairie
-    if not os.path.isfile(source_path):
-        button_new = ttk.Button(button_frame, text="Créer", command=creation_new_library)
-        button_new.pack(side=tk.LEFT, padx=10, pady=10, expand=True, fill=tk.X)
+    button_new = ttk.Button(button_frame, text="Créer", command=creation_new_library)
+    button_new.pack(side=tk.LEFT, padx=10, pady=10, expand=True, fill=tk.X)
 
     # Lancement de la fenêtre
     window.mainloop()
